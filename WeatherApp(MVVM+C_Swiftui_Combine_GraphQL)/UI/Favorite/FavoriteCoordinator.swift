@@ -12,13 +12,15 @@ import SwiftUI
 
 class SecondCoordinator: Coordinator<String> {
     private let router: Router!
+    private let city: String
 
-    init(router: Router) {
+    init(router: Router, city: String) {
         self.router = router
+        self.city = city
     }
 
     override func start() -> AnyPublisher<String, Never> {
-        let viewModel = SecondViewModel()
+        let viewModel = SecondViewModel(city: city)
         let viewController = UIHostingController(rootView: SecondView(viewModel: viewModel))
         presentedViewController = viewController
 

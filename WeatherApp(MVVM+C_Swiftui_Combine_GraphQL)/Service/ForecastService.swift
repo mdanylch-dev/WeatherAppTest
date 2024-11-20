@@ -11,13 +11,13 @@ import Combine
 struct ForecastService {
     private let cancelBag = CancelBag()
 
-    func fetchWeathe(for city: String, config: ConfigInput) -> AnyPublisher<ForecastModel, Error> {
+    func fetchWeathe(for city: String) -> AnyPublisher<ForecastModel, Error> {
         let subject = CurrentValueSubject<ForecastModel?, Error>(nil)
 
         print("-------------------------------")
         print("Start ForecastQuery for: \(city)")
 
-        let query = ForecastResulQueryQuery(name: city, config: nil)
+        let query = ForecastResulQueryQuery(name: city, config: .init(units: .metric, lang: .en))
         NetworkApolloController.shared.client.fetch(query: query) { result in
             switch result {
             case let .success(graphQLResult):

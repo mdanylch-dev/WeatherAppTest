@@ -36,3 +36,15 @@ struct ForecastModel: Identifiable, Hashable, Codable {
         self.windDeg = fragment.wind?.deg ?? 0
     }
 }
+
+struct CityModel: Identifiable, Codable {
+    let id: String
+    let name: String
+    let country: String
+
+    init(id: String, name: String, country: String) {
+        self.id = id
+        self.name = name
+        self.country = country
+    }
+}

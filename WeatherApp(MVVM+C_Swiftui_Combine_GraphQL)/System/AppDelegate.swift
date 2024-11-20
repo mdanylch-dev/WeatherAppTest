@@ -12,14 +12,14 @@ import Combine
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    var appCoordinator: AppCoordinator?
+    var appCoordinator: HomeCoordinator?
     var cancelBag = CancelBag()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
         window = UIWindow(frame: UIScreen.main.bounds)
 
-        appCoordinator = AppCoordinator(window: window!)
+        appCoordinator = HomeCoordinator(window: window!)
         appCoordinator?.start().sink(receiveValue: {}).store(in: cancelBag)
 
         return true

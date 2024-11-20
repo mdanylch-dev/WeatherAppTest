@@ -7,14 +7,6 @@
 
 import Combine
 
-protocol SecondViewModelType: ObservableObject {
-    // Inputs
-    func close()
-
-    // Bindings
-    var text: String { get set }
-}
-
 class SecondViewModel: SecondViewModelType {
     private let closeSubject = PassthroughSubject<String, Never>()
 
@@ -25,6 +17,7 @@ class SecondViewModel: SecondViewModelType {
 
     // Bindings
     @Published var text: String = ""
+    @Published var city: [String] = []
 
     var coordinatorInput: CoordinatorInput!
     var coordinatorOutput: CoordinatorOutput!
@@ -37,15 +30,26 @@ class SecondViewModel: SecondViewModelType {
 
     }
 
-    init() {
+    init(city: String) {
         coordinatorInput = CoordinatorInput(close: closeSubject.eraseToAnyPublisher())
         coordinatorOutput = CoordinatorOutput()
 
-        setupSubjects()
+        setupSubjects(city)
     }
 
-    private func setupSubjects() {
+    private func setupSubjects(_ city: String) {
+        if !city.isEmpty {
+            self.city.insert(city, at: 0)
+        }
 
     }
 }
 
+protocol SecondViewModelType: ObservableObject {
+    // Inputs
+    func close()
+
+    // Bindings
+    var text: String { get set }
+    var city: [String] { get }
+}
