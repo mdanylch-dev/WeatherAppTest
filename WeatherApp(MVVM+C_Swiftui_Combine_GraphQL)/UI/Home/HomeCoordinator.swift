@@ -27,12 +27,14 @@ class HomeCoordinator: Coordinator<Void> {
         window.rootViewController = router.navigationController
         window.makeKeyAndVisible()
 
-        viewModel.coordinatorInput.goToSecondView
-            .flatMap { [weak self, weak router] _ -> AnyPublisher<String, Never> in
+        viewModel.routing.goToFavorites
+            .flatMap { [weak self, weak router] city -> AnyPublisher<String, Never> in
                 guard let self = self, let router = router else { return Empty(completeImmediately: true).eraseToAnyPublisher() }
-                return self.coordinate(to: SecondCoordinator(router: router))
+                return self.coordinate(to: SecondCoordinator(router: router, city: city))
             }
-            .subscribe(viewModel.coordinatorOutput.textReceived)
+            .sink(receiveValue: { [weak viewModel] text in
+                viewModel?.fetchWeather(city: text)
+            })
             .store(in: cancelBag)
 
         return Empty<Void, Never>(completeImmediately: false)

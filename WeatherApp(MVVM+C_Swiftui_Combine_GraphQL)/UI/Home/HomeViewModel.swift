@@ -8,32 +8,32 @@
 import Foundation
 import Combine
 
-protocol HomeViewModelType: ObservableObject {
-    // Inputs
-    func goToSecondView()
-
-    // Outputs
-    var text: String { get }
-}
-
 class HomeViewModel: HomeViewModelType {
 
     private let cancelBag = CancelBag()
     private let weatherService = ForecastService()
-    private let goToSecondViewSubject = PassthroughSubject<Void, Never>()
-    private let textReceivedSubject = PassthroughSubject<String, Never>()
+    private var addToFavorite: String = ""
 
-    // Inputs
-    func goToSecondView() {
-        goToSecondViewSubject.send(())
+    // MARK: - Routing
+    struct Routing: HomeRoutingProtocol {
+        var goToFavorites = PassthroughSubject<String, Never>()
     }
 
-    // Outputs
-    @Published private(set) var text: String = ""
+    // MARK: - Bindings
     @Published private(set) var weather: ForecastModel?
 
-    var coordinatorInput: CoordinatorInput!
-    var coordinatorOutput: CoordinatorOutput!
+    let routing = Routing()
+
+    // MARK: - Intialization
+
+    // MARK: - Actions
+    func goToFavorites() {
+        routing.goToFavorites.send(self.addToFavorite)
+    }
+
+    func addToFavorites() {
+        self.addToFavorite = self.weather?.name ?? ""
+    }
 
     struct CoordinatorInput {
         var goToSecondView: AnyPublisher<Void, Never>
@@ -44,25 +44,11 @@ class HomeViewModel: HomeViewModelType {
     }
 
     init() {
-        coordinatorInput = CoordinatorInput(goToSecondView: goToSecondViewSubject.eraseToAnyPublisher())
-        coordinatorOutput = CoordinatorOutput(textReceived: textReceivedSubject)
-
-        setupSubjects()
+        fetchWeather(city: "Kyiv")
     }
 
-    private func setupSubjects() {
-        textReceivedSubject
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] text in
-                guard let self = self else { return }
-                self.text = text
-                self.fetchWeather(city: text)
-            })
-            .store(in: cancelBag)
-    }
-
-    private func fetchWeather(city: String) {
-        weatherService.fetchWeathe(for: city, config: .init(units: .metric, lang: .en))
+    func fetchWeather(city: String) {
+        weatherService.fetchWeathe(for: city)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
                 switch completion {
@@ -75,8 +61,22 @@ class HomeViewModel: HomeViewModelType {
                 guard let self = self else { return }
 
                 self.weather = forecat
-
             })
             .store(in: self.cancelBag)
     }
+}
+
+// MARK: - View model protocol
+protocol HomeViewModelType: ObservableObject {
+    // Inputs
+    func goToFavorites()
+    func addToFavorites()
+
+    // Outputs
+    var weather: ForecastModel? { get }
+}
+
+// MARK: - Routing protocol
+protocol HomeRoutingProtocol {
+    var goToFavorites: PassthroughSubject<String, Never> { get }
 }
